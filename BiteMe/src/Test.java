@@ -4,5 +4,6 @@ public class Test {
 		// TODO Auto-generated method stub
 		private boolean ben;
 		ben.shits(pants);
+		ofek.yells;
 	}
 }
