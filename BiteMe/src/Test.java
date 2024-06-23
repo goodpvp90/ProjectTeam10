@@ -5,6 +5,3 @@ public class Test {
 		private boolean ben;
 		ben.shits(pants);
 		ofek.yells;1
-		Ofek.updates(branch)
-	}
-}
