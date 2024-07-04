@@ -55,8 +55,9 @@ public class DBController {
     public void insertOrder(int orderNumber, String restaurantName, double totalPrice, int orderListNumber, String orderAddress) {
         String query = "INSERT INTO orders (OrderNumber, name_of_restaurant, Total_price, order_list_number, order_address) VALUES (?, ?, ?, ?, ?)";
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
-             PreparedStatement preparedStatement = conn.prepareStatement(query)) {
+        try {
+        	Connection conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
+            PreparedStatement preparedStatement = conn.prepareStatement(query);
             preparedStatement.setInt(1, orderNumber);
             preparedStatement.setString(2, restaurantName);
             preparedStatement.setDouble(3, totalPrice);
@@ -70,5 +71,12 @@ public class DBController {
             e.printStackTrace();
         }
     }
+    
+//    public void getData() {
+//    	try (Connection conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD)
+//    			{
+//    				
+//    			}
+//    }
 
 }
