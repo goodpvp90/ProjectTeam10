@@ -7,6 +7,14 @@ public class Order {
 	private int order_number;
 	private int total_price;
 	
+	public Order(String name_of_restaurant, String order_address, int order_list_number, int order_number,
+			int total_price) {
+		this.name_of_restaurant = name_of_restaurant;
+		this.order_address = order_address;
+		this.order_list_number = order_list_number;
+		this.order_number = order_number;
+		this.total_price = total_price;
+	}
 	public int getTotal_price() {
 		return total_price;
 	}
