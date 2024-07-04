@@ -74,6 +74,10 @@ public class ProtoServer extends AbstractServer {
             } else {
                 System.out.println("Received unknown message type from client: " + msg);
             }
+        } else if (msg instanceof String)
+        	if (msg.equals("view"))
+        {
+        		dbController.showOrders();
         } else {
             System.out.println("Received unknown message from client: " + msg);
         }
@@ -109,7 +113,6 @@ public class ProtoServer extends AbstractServer {
         int port = 8080; // Port to listen on
 
         ProtoServer sv = new ProtoServer(port);
-
         try {
             sv.listen(); // Start listening for connections
         } catch (Exception ex) {
