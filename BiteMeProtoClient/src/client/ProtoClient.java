@@ -17,10 +17,19 @@ public class ProtoClient extends AbstractClient {
 
     @Override
     protected void handleMessageFromServer(Object msg) {
-        // Print the message from the server to the console
-        System.out.println("Message from server: " + msg.toString());
-        
+        if (msg instanceof Object[]) {
+            Object[] orders = (Object[]) msg;
+            for (Object order : orders) {
+                Object[] orderDetails = (Object[]) order;
+                System.out.println("Order Number: " + orderDetails[0] + ", Restaurant: " + orderDetails[1] +
+                        ", Total Price: " + orderDetails[2] + ", Order List Number: " + orderDetails[3] +
+                        ", Order Address: " + orderDetails[4]);
+            }
+        } else {
+            System.out.println("Message from server: " + msg);
+        }
     }
+
 
     /***
      * this function quits the activity of the client and close its connection to the server
@@ -74,6 +83,7 @@ public class ProtoClient extends AbstractClient {
 
         // Example update order request
         client.sendInsertOrderRequest(123, "Domino's", 25.99, 2, "456 Elm St");
+        client.viewOrdersFromDB();
 
         //client.sendUpdateOrderRequest(1, "Pizza Hut", 29.99, 123, "123 Main St");
     }
