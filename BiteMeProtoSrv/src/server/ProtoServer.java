@@ -4,6 +4,7 @@ import java.io.*;
 import java.sql.SQLException;
 import java.util.List;
 
+import common.Order;
 import ocsf.server.*;
 
 public class ProtoServer extends AbstractServer {
@@ -33,9 +34,14 @@ public class ProtoServer extends AbstractServer {
         }
     }
 
+    
     @Override
     protected void handleMessageFromClient(Object msg, ConnectionToClient client) {
         System.out.println("Message received: " + msg + " from " + client);
+        
+        if (msg instanceof Order) {
+        	
+        }
         
         if (msg instanceof Object[]) {
             Object[] message = (Object[]) msg;
@@ -56,7 +62,7 @@ public class ProtoServer extends AbstractServer {
                     e.printStackTrace();
                 }
                 
-            } else if ("insertOrder".equals(message[0])) {
+            } else if (msg instanceof Order) {
                 int orderNumber = (int) message[1];
                 String restaurantName = (String) message[2];
                 double totalPrice = (double) message[3];

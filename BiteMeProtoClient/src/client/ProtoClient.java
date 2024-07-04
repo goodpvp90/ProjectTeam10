@@ -4,6 +4,8 @@ import ocsf.client.*;
 import java.io.*;
 import java.net.InetAddress;
 
+import common.Order;
+
 public class ProtoClient extends AbstractClient {
     final public static int DEFAULT_PORT = 8080;
 
@@ -29,6 +31,8 @@ public class ProtoClient extends AbstractClient {
             System.out.println("Message from server: " + msg);
         }
     }
+    
+
 
 
     /***
@@ -56,15 +60,17 @@ public class ProtoClient extends AbstractClient {
         }
     }
 
-    public void sendUpdateOrderRequest(int orderNumber, String restaurantName, double totalPrice, int orderListNumber, String orderAddress) {
-        Object[] updateRequest = { "updateOrder", orderNumber, restaurantName, totalPrice, orderListNumber, orderAddress };
-        sendMessageToServer(updateRequest);
+    public void sendUpdateOrderRequest(Order order, String valueToChange) {
+    	Object[] arr = new Object[2];
+    	arr[0] = order;
+    	arr[1] = valueToChange;
+        sendMessageToServer(order);
     }
     
-    public void sendInsertOrderRequest(int orderNumber, String restaurantName, double totalPrice, int orderListNumber, String orderAddress) {
-        Object[] insertRequest = { "insertOrder", orderNumber, restaurantName, totalPrice, orderListNumber, orderAddress };
-        sendMessageToServer(insertRequest);
+    public void sendInsertOrderRequest(Order order) {
+        sendMessageToServer(order);
     }
+    
     
     public void viewOrdersFromDB() {
     	sendMessageToServer("view");
@@ -82,7 +88,8 @@ public class ProtoClient extends AbstractClient {
         client.sendMessageToServer("Hello, server!");
 
         // Example update order request
-        client.sendInsertOrderRequest(123, "Domino's", 25.99, 2, "456 Elm St");
+    	Order order = new Order("Domino's", "456 Elm St", 2, 123, 25.99);
+        client.sendInsertOrderRequest(order);
         client.viewOrdersFromDB();
 
         //client.sendUpdateOrderRequest(1, "Pizza Hut", 29.99, 123, "123 Main St");
