@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DBController {
 	private static final String JDBC_URL = "jdbc:mysql://localhost:3306/bitemeproto?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true";
@@ -74,33 +76,33 @@ public class DBController {
         }
     }
 
-	public void showOrders() {
+    public List<Object[]> showOrders() {
         String query = "SELECT * FROM orders";
+        List<Object[]> orders = new ArrayList<>();
 
-        try {
-        	Connection conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(query);
-            System.out.println(rs);
-            /*while (rs.next()) {
-                // Assuming your_table has columns: id, name, and value
-                int ordernum = rs.getInt("ordernumber");
+        try (Connection conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                int ordernum = rs.getInt("OrderNumber");
                 String name = rs.getString("name_of_restaurant");
                 double price = rs.getDouble("Total_price");
                 int order_lst = rs.getInt("order_list_number");
                 String order_add = rs.getString("order_address");
 
-                // Print the results
-                System.out.println("ID: " + ordernum + ", Name: " + name + ", price: " + price + ", list num: " + order_lst + ", order_add: " + order_add);}
-        */} catch (SQLException e) {
-            System.out.println("Failed to insert the order.");
+                orders.add(new Object[]{ordernum, name, price, order_lst, order_add});
+            }
+        } catch (SQLException e) {
+            System.out.println("Failed to retrieve the orders.");
             e.printStackTrace();
         }
+
+        return orders;
     }
+}
 //    public void getData() {
 //    	try (Connection conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD)
 //    			{
 //    				
 //    			}
 //    }
-}

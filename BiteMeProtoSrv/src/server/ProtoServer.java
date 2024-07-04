@@ -2,6 +2,7 @@ package server;
 
 import java.io.*;
 import java.sql.SQLException;
+import java.util.List;
 
 import ocsf.server.*;
 
@@ -77,7 +78,12 @@ public class ProtoServer extends AbstractServer {
         } else if (msg instanceof String)
         	if (msg.equals("view"))
         {
-        		dbController.showOrders();
+        		List<Object[]> orders = dbController.showOrders();
+                try {
+                    client.sendToClient(orders.toArray());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
         } else {
             System.out.println("Received unknown message from client: " + msg);
         }
