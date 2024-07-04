@@ -19,6 +19,7 @@ public class ProtoClient extends AbstractClient {
     protected void handleMessageFromServer(Object msg) {
         // Print the message from the server to the console
         System.out.println("Message from server: " + msg.toString());
+        
     }
 
     /***
@@ -55,6 +56,11 @@ public class ProtoClient extends AbstractClient {
         Object[] insertRequest = { "insertOrder", orderNumber, restaurantName, totalPrice, orderListNumber, orderAddress };
         sendMessageToServer(insertRequest);
     }
+    
+    public void viewOrdersFromDB() {
+    	sendMessageToServer("view");
+    }
+    
 
     public static void main(String[] args) throws IOException {
         // Example usage
