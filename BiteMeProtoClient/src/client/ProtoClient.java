@@ -16,18 +16,21 @@ public class ProtoClient extends AbstractClient {
         String clientHostName = InetAddress.getLocalHost().getHostName();
         sendToServer(new String[] { clientIP, clientHostName, "start" });
     }
-
+    
+    
     @Override
     protected void handleMessageFromServer(Object msg) {
         if (msg instanceof Object[]) {
             Object[] orders = (Object[]) msg;
             for (Object order : orders) {
                 Object[] orderDetails = (Object[]) order;
+                //////////////////////////need to send to controller
                 System.out.println("Order Number: " + orderDetails[0] + ", Restaurant: " + orderDetails[1] +
                         ", Total Price: " + orderDetails[2] + ", Order List Number: " + orderDetails[3] +
                         ", Order Address: " + orderDetails[4]);
             }
         } else {
+        	//send (String)msg to GUIcontroller//
             System.out.println("Message from server: " + msg);
         }
     }
@@ -66,7 +69,8 @@ public class ProtoClient extends AbstractClient {
     public void viewOrdersFromDB() {
         sendMessageToServer("view");
     }
-
+    
+    
     public static void main(String[] args) throws IOException {
         ProtoClient client = new ProtoClient("localhost", DEFAULT_PORT);
         try {
@@ -79,5 +83,10 @@ public class ProtoClient extends AbstractClient {
         client.viewOrdersFromDB();
         Order order2 = new Order(777, "Domino's", 104, 1, "456 Elm St");
         client.sendUpdateOrderRequest(order2, "total_price");
+        client.viewOrdersFromDB();
+        Order order3 = new Order(777, "Domino's", 104, 1, "4 E St");
+        client.sendUpdateOrderRequest(order3, "order_address");
+        client.viewOrdersFromDB();
+        
     }
 }

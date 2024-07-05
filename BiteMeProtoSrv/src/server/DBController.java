@@ -36,9 +36,10 @@ public class DBController {
 		}
 	}
 
-	public void updateOrder(int orderNumber, String toChange, Object newParam) {
+	public String updateOrder(int orderNumber, String toChange, Object newParam) {
 		
 		String query = "UPDATE orders SET " + toChange + " = ? WHERE OrderNumber = ?";
+        String message;
 
 		try { 
 			Connection conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
@@ -49,18 +50,20 @@ public class DBController {
 			else
 				preparedStatement.setString(1, (String)newParam);
 			preparedStatement.setInt(2, orderNumber);
-			System.out.println(query);
 			int rowsAffected = preparedStatement.executeUpdate();
-			System.out.println("Order updated successfully. Rows affected: " + rowsAffected);
+			if (rowsAffected == 0)
+				message = "nothing";
+			else
+				message = "updated successfully";
 		} catch (SQLException e) {
-			System.out.println("Failed to update the order.");
-			e.printStackTrace();
+            message = e.getMessage();
 		}
+		return message;
 	}
 
-	public void insertOrder(int orderNumber, String restaurantName, double totalPrice, int orderListNumber, String orderAddress) {
+	public String insertOrder(int orderNumber, String restaurantName, double totalPrice, int orderListNumber, String orderAddress) {
         String query = "INSERT INTO orders (OrderNumber, name_of_restaurant, Total_price, order_list_number, order_address) VALUES (?, ?, ?, ?, ?)";
-
+        String message;
         try {
         	Connection conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
             PreparedStatement preparedStatement = conn.prepareStatement(query);
@@ -71,11 +74,11 @@ public class DBController {
             preparedStatement.setString(5, orderAddress);
 
             int rowsAffected = preparedStatement.executeUpdate();
-            System.out.println("Order inserted successfully. Rows affected: " + rowsAffected);
+            message = "inserted successfully";
         } catch (SQLException e) {
-            System.out.println("Failed to insert the order.");
-            e.printStackTrace();
+            message = e.getMessage();
         }
+        return message;
     }
 
     public List<Object[]> showOrders() {

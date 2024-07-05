@@ -2,6 +2,7 @@ package server;
 
 import java.io.*;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.List;
 
 import common.Order;
@@ -21,34 +22,53 @@ public class ProtoServer extends AbstractServer {
             e.printStackTrace();
         }
     }
-
+    
+    private String createResponseForClient(String message) {
+    	String[] words = message.split("\\s+");
+    	if ("inserted".equals(words[0]))
+    		return "The order sent successfully";
+    	else if ("Duplicate".equals(words[0]))
+    		return "The order already exists";
+    	else if("updated".equals(words[0]))
+    		return "The order updated successfully";
+    	else if("nothing".equals(words[0]))
+    		return "Nothing has changed";
+    	else
+    		return "Something went wrong";
+    }
+    
     @Override
     protected void handleMessageFromClient(Object msg, ConnectionToClient client) {
-        System.out.println("Message received: " + msg + " from " + client);
-
+        //System.out.println("Message received: " + msg + " from " + client);
+        String result;
         if (msg instanceof String[]) {
             String[] message = (String[]) msg;
             // Handle the initial connection message
             System.out.println("Received start/end message: " + String.join(", ", message));
-        } else if (msg instanceof Object[]) {
+        }
+        else if (msg instanceof Object[]) {
             Object[] message = (Object[]) msg;
-
+            //if got order to insert to DB
             if ("insertOrder".equals(message[0])) {
                 Order order = (Order) message[1];
-                dbController.insertOrder(order.getOrderNumber(), order.getNameOfRestaurant(), order.getTotalPrice(), 
+                result = dbController.insertOrder(order.getOrderNumber(), order.getNameOfRestaurant(), order.getTotalPrice(), 
                                           order.getOrderListNumber(), order.getOrderAddress());
                 try {
-                    client.sendToClient("Order inserted successfully: " + order.getOrderNumber());
+                    client.sendToClient(createResponseForClient(result));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            } else if (message.length > 1 && message[0] instanceof Order) {
+            }
+            //if we want to update an order
+            else if (message[0] instanceof Order) {
                 Order order = (Order) message[0];
                 String toChange = (String) message[1];
-                dbController.updateOrder(order.getOrderNumber(), toChange, order.getTotalPrice());
-
+                if ("order_address".equals(message[1]))
+                	result = dbController.updateOrder(order.getOrderNumber(), toChange, order.getOrderAddress());
+                else
+                	result = dbController.updateOrder(order.getOrderNumber(), toChange, order.getTotalPrice());
                 try {
-                    client.sendToClient("Order updated successfully: " + order.getOrderNumber());
+                    client.sendToClient(createResponseForClient(result));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -56,6 +76,7 @@ public class ProtoServer extends AbstractServer {
                 System.out.println("Received unknown message type from client: " + msg);
             }
         } else if (msg instanceof String) {
+        	//if want to view
             if ("view".equals(msg)) {
                 List<Object[]> orders = dbController.showOrders();
                 try {
