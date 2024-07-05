@@ -36,17 +36,19 @@ public class DBController {
 		}
 	}
 
-	public void updateOrder(int orderNumber, String restaurantName, double totalPrice, int orderListNumber,
-			String orderAddress) {
-		String query = "UPDATE `orders` SET name_of_restaurant=?, Total_price=?, order_list_number=?, order_address=? WHERE OrderNumber=?";
+	public void updateOrder(int orderNumber, String toChange, Object newParam) {
+		
+		String query = "UPDATE orders SET ? = ? WHERE OrderNumber = ?";
 
-		try (Connection conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
-				PreparedStatement preparedStatement = conn.prepareStatement(query)) {
-			preparedStatement.setString(1, restaurantName);
-			preparedStatement.setDouble(2, totalPrice);
-			preparedStatement.setInt(3, orderListNumber);
-			preparedStatement.setString(4, orderAddress);
-			preparedStatement.setInt(5, orderNumber);
+		try { 
+			Connection conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
+			PreparedStatement preparedStatement = conn.prepareStatement(query);
+			preparedStatement.setString(1, toChange);
+			if (newParam instanceof Double)
+				preparedStatement.setDouble(2, (double)newParam);
+			else
+				preparedStatement.setString(2, (String)newParam);
+			preparedStatement.setInt(3, orderNumber);
 
 			int rowsAffected = preparedStatement.executeUpdate();
 			System.out.println("Order updated successfully. Rows affected: " + rowsAffected);

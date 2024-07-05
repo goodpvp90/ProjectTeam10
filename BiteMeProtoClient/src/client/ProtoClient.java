@@ -88,10 +88,10 @@ public class ProtoClient extends AbstractClient {
         client.sendMessageToServer("Hello, server!");
 
         // Example update order request
-    	Order order = new Order("Domino's", "456 Elm St", 2, 123, 25.99);
-        client.sendInsertOrderRequest(order);
-        client.viewOrdersFromDB();
-
-        //client.sendUpdateOrderRequest(1, "Pizza Hut", 29.99, 123, "123 Main St");
+//    	Order order = new Order("Domino's", "456 Elm St", 1, 1623, 25.99);
+//        client.sendInsertOrderRequest(order);
+//        client.viewOrdersFromDB();
+//    	Order orderupdate = new Order("Domino's", "456 Elm St", 5, 1343, 78);
+//        client.sendUpdateOrderRequest(orderupdate,"Total_price");
     }
 }
