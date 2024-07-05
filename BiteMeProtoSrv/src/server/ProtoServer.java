@@ -5,115 +5,113 @@ import java.sql.SQLException;
 import java.util.List;
 
 import common.Order;
-import ocsf.server.*;
+import ocsf.server.AbstractServer;
+import ocsf.server.ConnectionToClient;
 
 public class ProtoServer extends AbstractServer {
-	// Class variables *************************************************
+    private DBController dbController;
 
-	/**
-	 * The default port to listen on.
-	 */
+    public ProtoServer(int port) {
+        super(port);
+        dbController = new DBController();
+        try {
+            dbController.connect();
+        } catch (ClassNotFoundException | SQLException e) {
+            System.out.println("Failed to connect to the database.");
+            e.printStackTrace();
+        }
+    }
 
-	private DBController dbController;
+    @Override
+    protected void handleMessageFromClient(Object msg, ConnectionToClient client) {
+        System.out.println("Message received: " + msg + " from " + client);
 
-	// Constructors ****************************************************
+        if (msg instanceof String[]) {
+            String[] message = (String[]) msg;
+            // Handle the initial connection message
+            System.out.println("Received start/end message: " + String.join(", ", message));
+        } else if (msg instanceof Object[]) {
+            Object[] message = (Object[]) msg;
 
-	/**
-	 * Constructs an instance of the echo server.
-	 *
-	 * @param port The port number to connect on.
-	 */
-	public ProtoServer(int port) {
-		super(port);
-		dbController = new DBController();
-		try {
-			dbController.connect();
-		} catch (ClassNotFoundException | SQLException e) {
-			System.out.println("Failed to connect to the database.");
-			e.printStackTrace();
-		}
-	}
+            if ("insertOrder".equals(message[0])) {
+                Order order = (Order) message[1];
+                dbController.insertOrder(order.getOrderNumber(), order.getNameOfRestaurant(), order.getTotalPrice(), 
+                                          order.getOrderListNumber(), order.getOrderAddress());
+                try {
+                    client.sendToClient("Order inserted successfully: " + order.getOrderNumber());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else if (message.length > 1 && message[0] instanceof Order) {
+                Order order = (Order) message[0];
+                String toChange = (String) message[1];
+                dbController.updateOrder(order.getOrderNumber(), toChange, order.getTotalPrice());
 
-	@Override
-	protected void handleMessageFromClient(Object msg, ConnectionToClient client) {
-		System.out.println("Message received: " + msg + " from " + client);
-		System.out.println("AAAAAAAAAA");
+                try {
+                    client.sendToClient("Order updated successfully: " + order.getOrderNumber());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                System.out.println("Received unknown message type from client: " + msg);
+            }
+        } else if (msg instanceof String) {
+            if ("view".equals(msg)) {
+                List<Object[]> orders = dbController.showOrders();
+                try {
+                    client.sendToClient(orders.toArray());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                System.out.println("Received unknown message from client: " + msg);
+            }
+        } else {
+            System.out.println("Received unknown message from client: " + msg);
+        }
+    }
 
-		if (msg.equals("Hello, server!")){
-			System.out.println("AAAAAAAAAA");
-		}
-		
-		// if insert to DB
-		else if (msg instanceof Order) {
-			Order order = (Order) msg;
-			dbController.insertOrder(order.getOrder_number(), order.getName_of_restaurant(), order.getTotal_price(),
-					order.getOrder_list_number(), order.getOrder_address());
-		}
-		// if update the DB
-		else if (msg instanceof Object[]) {
-			Object[] message = (Object[]) msg;
-			Order order = (Order) message[0];
-			// if we want to update the order's price
-			if ("Total_price".equals(message[1]))
-				dbController.updateOrder(order.getOrder_number(), "Total_price", order.getTotal_price());
-			else if ("order_address".equals(message[1]))
-				dbController.updateOrder(order.getOrder_number(), "order_address", order.getOrder_address());
-			// Optionally, send a response back to the client confirming the update
-			try {
-				client.sendToClient("Order updated successfully: " + order.getOrder_number());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		// if just want to view the table
-		else if (msg instanceof String) {
-			if (msg.equals("view")) {
-				List<Object[]> orders = dbController.showOrders();
-				try {
-					client.sendToClient(orders.toArray());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		} else {
-			System.out.println("Received unknown message from client: " + msg);
-		}
-	}
+    @Override
+    protected void clientDisconnected(ConnectionToClient client) {
+        System.out.println("Client disconnected: " + client);
+    }
 
-	/**
-	 * This method overrides the one in the superclass. Called when the server
-	 * starts listening for connections.
-	 */
-	protected void serverStarted() {
-		System.out.println("Server listening for connections on port " + getPort());
-	}
+    @Override
+    protected void serverStarted() {
+        System.out.println("Server listening for connections on port " + getPort());
+    }
 
-	/**
-	 * This method overrides the one in the superclass. Called when the server stops
-	 * listening for connections.
-	 */
-	protected void serverStopped() {
-		System.out.println("Server has stopped listening for connections.");
-		dbController.closeConnection();
-	}
+    @Override
+    protected void serverStopped() {
+        System.out.println("Server has stopped listening for connections.");
+        dbController.closeConnection();
+    }
 
-	// Class methods ***************************************************
+    public void stopServer() {
+        try {
+            stopListening();
+            close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-	/**
-	 * This method is responsible for the creation of the server instance (there is
-	 * no UI in this phase).
-	 *
-	 * @param args[0] The port number to listen on. Defaults to 5555 if no argument
-	 *                is entered.
-	 */
-	public static void main(String[] args) {
-		int port = 8080; // Port to listen on
+    public static void main(String[] args) {
+        int port = 8080;
 
-		ProtoServer sv = new ProtoServer(port);
-		try {
-			sv.listen(); // Start listening for connections
-		} catch (Exception ex) {
-			System.out.println("ERROR - Could not listen for clients!");
-		}
-	}
+        ProtoServer sv = new ProtoServer(port);
+        try {
+            sv.listen();
+        } catch (Exception ex) {
+            System.out.println("ERROR - Could not listen for clients!");
+        }
+
+        // Example to stop the server after some time (for testing purposes)
+        /*try {
+            Thread.sleep(30000); // Let the server run for 30 seconds
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        sv.stopServer();*/
+    }
 }

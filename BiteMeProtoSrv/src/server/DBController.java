@@ -38,18 +38,18 @@ public class DBController {
 
 	public void updateOrder(int orderNumber, String toChange, Object newParam) {
 		
-		String query = "UPDATE orders SET ? = ? WHERE OrderNumber = ?";
+		String query = "UPDATE orders SET " + toChange + " = ? WHERE OrderNumber = ?";
 
 		try { 
 			Connection conn = DriverManager.getConnection(JDBC_URL, USERNAME, PASSWORD);
 			PreparedStatement preparedStatement = conn.prepareStatement(query);
-			preparedStatement.setString(1, toChange);
+			
 			if (newParam instanceof Double)
-				preparedStatement.setDouble(2, (double)newParam);
+				preparedStatement.setDouble(1, (double)newParam);
 			else
-				preparedStatement.setString(2, (String)newParam);
-			preparedStatement.setInt(3, orderNumber);
-
+				preparedStatement.setString(1, (String)newParam);
+			preparedStatement.setInt(2, orderNumber);
+			System.out.println(query);
 			int rowsAffected = preparedStatement.executeUpdate();
 			System.out.println("Order updated successfully. Rows affected: " + rowsAffected);
 		} catch (SQLException e) {

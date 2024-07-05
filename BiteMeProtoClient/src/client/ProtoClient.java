@@ -31,14 +31,7 @@ public class ProtoClient extends AbstractClient {
             System.out.println("Message from server: " + msg);
         }
     }
-    
 
-
-
-    /***
-     * this function quits the activity of the client and close its connection to the server
-     * and signal the server that the client who was active stopped using the system .
-     */
     public void quit() {
         try {
             String clientIP = InetAddress.getLocalHost().getHostAddress();
@@ -53,7 +46,6 @@ public class ProtoClient extends AbstractClient {
 
     public void sendMessageToServer(Object msg) {
         try {
-            // Send the message to the server
             sendToServer(msg);
         } catch (Exception e) {
             System.out.println("Failed to send message to server: " + e.getMessage());
@@ -61,37 +53,31 @@ public class ProtoClient extends AbstractClient {
     }
 
     public void sendUpdateOrderRequest(Order order, String valueToChange) {
-    	Object[] arr = new Object[2];
-    	arr[0] = order;
-    	arr[1] = valueToChange;
-        sendMessageToServer(order);
+        Object[] arr = new Object[2];
+        arr[0] = order;
+        arr[1] = valueToChange;
+        sendMessageToServer(arr);
     }
-    
+
     public void sendInsertOrderRequest(Order order) {
-        sendMessageToServer(order);
+        sendMessageToServer(new Object[] { "insertOrder", order });
     }
-    
-    
+
     public void viewOrdersFromDB() {
-    	sendMessageToServer("view");
+        sendMessageToServer("view");
     }
-    
 
     public static void main(String[] args) throws IOException {
-        // Example usage
         ProtoClient client = new ProtoClient("localhost", DEFAULT_PORT);
         try {
             client.openConnection();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        client.sendMessageToServer("Hello, server!");
-
-        // Example update order request
-//    	Order order = new Order("Domino's", "456 Elm St", 1, 1623, 25.99);
-//        client.sendInsertOrderRequest(order);
-//        client.viewOrdersFromDB();
-//    	Order orderupdate = new Order("Domino's", "456 Elm St", 5, 1343, 78);
-//        client.sendUpdateOrderRequest(orderupdate,"Total_price");
+        Order order = new Order(777, "Domino's", 25.99, 1, "456 Elm St");
+        client.sendInsertOrderRequest(order);
+        client.viewOrdersFromDB();
+        Order order2 = new Order(777, "Domino's", 104, 1, "456 Elm St");
+        client.sendUpdateOrderRequest(order2, "total_price");
     }
 }
