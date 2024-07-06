@@ -60,13 +60,13 @@ public class ProtoServer extends AbstractServer {
                 }
             }
             //if we want to update an order
-            else if (message[0] instanceof Order) {
-                Order order = (Order) message[0];
-                String toChange = (String) message[1];
-                if ("order_address".equals(message[1]))
-                	result = dbController.updateOrder(order.getOrderNumber(), toChange, order.getOrderAddress());
+            else if ("updateOrder".equals(message[0])) {
+                int orderNum = (int) message[1];
+                String toChange = (String) message[2];
+                if ("order_address".equals(toChange))
+                	result = dbController.updateOrder(orderNum, toChange, (String)message[3]);
                 else
-                	result = dbController.updateOrder(order.getOrderNumber(), toChange, order.getTotalPrice());
+                	result = dbController.updateOrder(orderNum, toChange, (double)message[3]);
                 try {
                     client.sendToClient(createResponseForClient(result));
                 } catch (IOException e) {
