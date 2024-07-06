@@ -55,13 +55,15 @@ public class ProtoClient extends AbstractClient {
         }
     }
 
-    public void sendUpdateOrderRequest(Order order, String valueToChange) {
-        Object[] arr = new Object[2];
-        arr[0] = order;
-        arr[1] = valueToChange;
+    public void sendUpdateOrderRequest(int orderNum, String colToChange, Object newVal) {
+        Object[] arr = new Object[4];
+        arr[0] = "updateOrder";
+        arr[1] = orderNum;
+        arr[2] = colToChange;
+        arr[3] = newVal;
         sendMessageToServer(arr);
     }
-
+    
     public void sendInsertOrderRequest(Order order) {
         sendMessageToServer(new Object[] { "insertOrder", order });
     }
@@ -81,12 +83,12 @@ public class ProtoClient extends AbstractClient {
         Order order = new Order(777, "Domino's", 25.99, 1, "456 Elm St");
         client.sendInsertOrderRequest(order);
         client.viewOrdersFromDB();
-        Order order2 = new Order(777, "Domino's", 104, 1, "456 Elm St");
-        client.sendUpdateOrderRequest(order2, "total_price");
+        client.sendUpdateOrderRequest(777, "total_price", 13.44);
         client.viewOrdersFromDB();
-        Order order3 = new Order(777, "Domino's", 104, 1, "4 E St");
-        client.sendUpdateOrderRequest(order3, "order_address");
+        client.sendUpdateOrderRequest(777, "order_address", "hazamir");
         client.viewOrdersFromDB();
+        
+       
         
     }
 }
