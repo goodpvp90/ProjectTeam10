@@ -107,7 +107,7 @@ public class ProtoClient extends AbstractClient {
         client.viewOrdersFromDB();
         client.sendUpdateOrderRequest(777, "order_address", "hazamir");
         client.viewOrdersFromDB();
-        
+        client.sendUpdateOrderRequest(666, "order_address", "hazamit");
        
         
     }

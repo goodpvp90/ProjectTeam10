@@ -5,8 +5,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
 import java.io.IOException;
 
@@ -18,12 +16,13 @@ public class clientController {
 
     @FXML
     private ListView<String> ordersListView;
-    
+
+    @FXML
+    private Text welcomeText;
+
     public clientController() {
         try {
             client = new ProtoClient("localhost", ProtoClient.DEFAULT_PORT);
-            client.setGuiController(this);
-            System.out.println("Client initialized and controller set");
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Failed to initialize client: " + e.getMessage());
@@ -32,9 +31,11 @@ public class clientController {
 
     @FXML
     private void initialize() {
+        // This ensures that the GUI controller is set when the FXML is loaded.
         if (client != null) {
             client.setGuiController(this);
-            System.out.println("Controller set in initialize method");
+            // Update the welcome text with the client's host name
+            welcomeText.setText("Hello " + client.getHost() + "! Please choose an action:");
         } else {
             System.out.println("Client is null in initialize method");
         }
@@ -43,7 +44,6 @@ public class clientController {
     @FXML
     private void handleViewButton() {
         try {
-            System.out.println("View button clicked, requesting orders from DB");
             client.viewOrdersFromDB();
         } catch (Exception e) {
             e.printStackTrace();
@@ -51,46 +51,25 @@ public class clientController {
         }
     }
 
+    @FXML
+    private void handleUpdateButton() {
+     //notyet
+    }
+
+    @FXML
+    private void handleQuitButton() {
+        client.quit();
+    }
+
     public void displayOrders(Object[] orders) {
-        System.out.println("Displaying orders");
-        if (orders == null) {
-            System.out.println("Received null orders");
-            return;
-        }
-
-        // Clear previous orders
-        if (ordersContainer != null) {
-            ordersContainer.getChildren().clear();
-            for (Object order : orders) {
-                try {
-                    Object[] orderDetails = (Object[]) order;
-                    Text orderText = new Text("Order Number: " + orderDetails[0] + ", Restaurant: " + orderDetails[1] +
-                            ", Total Price: " + orderDetails[2] + ", Order List Number: " + orderDetails[3] +
-                            ", Order Address: " + orderDetails[4]);
-                    ordersContainer.getChildren().add(orderText);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.out.println("Error while displaying orders: " + e.getMessage());
+        for (Object order : orders) {
+            if (order instanceof Object[]) {
+                StringBuilder orderDetails = new StringBuilder();
+                for (Object obj : (Object[]) order) {
+                    orderDetails.append(obj).append("\t");
                 }
+                ordersListView.getItems().add(orderDetails.toString());
             }
-        }
-
-        // Using ListView
-        if (ordersListView != null) {
-            ObservableList<String> ordersList = FXCollections.observableArrayList();
-            for (Object order : orders) {
-                try {
-                    Object[] orderDetails = (Object[]) order;
-                    String orderText = "Order Number: " + orderDetails[0] + ", Restaurant: " + orderDetails[1] +
-                            ", Total Price: " + orderDetails[2] + ", Order List Number: " + orderDetails[3] +
-                            ", Order Address: " + orderDetails[4];
-                    ordersList.add(orderText);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.out.println("Error while displaying orders: " + e.getMessage());
-                }
-            }
-            ordersListView.setItems(ordersList);
         }
     }
 }
