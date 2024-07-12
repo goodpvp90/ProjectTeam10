@@ -1,13 +1,13 @@
 package client;
-
 import ocsf.client.*;
 import java.io.*;
 import java.net.InetAddress;
-
 import common.Order;
+import ClientGUI.clientController;//ADDED
 
 public class ProtoClient extends AbstractClient {
     final public static int DEFAULT_PORT = 8080;
+    private clientController clientController;//ADDED
 
     public ProtoClient(String host, int port) throws IOException {
         super(host, port);
@@ -17,8 +17,13 @@ public class ProtoClient extends AbstractClient {
         sendToServer(new String[] { clientIP, clientHostName, "start" });
     }
     
+    //ADDED
+    public void setGuiController(clientController clientController) {
+        this.clientController = clientController;
+    }
+  //ADDED
     
-    @Override
+   /* @Override
     protected void handleMessageFromServer(Object msg) {
         if (msg instanceof Object[]) {
             Object[] orders = (Object[]) msg;
@@ -33,7 +38,22 @@ public class ProtoClient extends AbstractClient {
         	//send (String)msg to GUIcontroller//
             System.out.println("Message from server: " + msg);
         }
+    }*/
+    
+    //CHANGED
+    @Override
+    protected void handleMessageFromServer(Object msg) {
+        if (msg instanceof Object[]) {
+            Object[] orders = (Object[]) msg;
+            if (clientController != null) {
+            	System.out.println("here");//ADDED
+            	clientController.displayOrders(orders);
+            }
+        } else {
+            System.out.println("Message from server: " + msg);
+        }
     }
+    //CHANGED
 
     public void quit() {
         try {
@@ -52,7 +72,7 @@ public class ProtoClient extends AbstractClient {
             sendToServer(msg);
         } catch (Exception e) {
             System.out.println("Failed to send message to server: " + e.getMessage());
-        }
+        }//איך אני גורם לזה לעבוד עם לחיצה על כפתור VIEW
     }
 
     public void sendUpdateOrderRequest(int orderNum, String colToChange, Object newVal) {

@@ -78,6 +78,7 @@ public class ProtoServer extends AbstractServer {
         } else if (msg instanceof String) {
         	//if want to view
             if ("view".equals(msg)) {
+            	
                 List<Object[]> orders = dbController.showOrders();
                 try {
                     client.sendToClient(orders.toArray());
