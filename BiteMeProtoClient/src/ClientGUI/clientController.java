@@ -9,14 +9,13 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import java.io.IOException;
-import java.util.List;
-import java.util.function.Consumer;
 import client.ProtoClient;
 
 public class clientController {
     private ProtoClient client;
     private boolean updating = false;
-    private Consumer<List<String>> displayOrdersCallback;
+    
+    // UI components injected from FXML
     @FXML
     private VBox ordersContainer;
     @FXML
@@ -30,32 +29,46 @@ public class clientController {
     @FXML
     private TextField newValueField;
     @FXML
+    private Button connectButton;
+    @FXML
+    private Button viewButton;
+    @FXML
     private Button updateButton;
-    
-    //Constructs the controller with the name & port
+    @FXML
+    private Button quitButton;
+
+    // Constructor
     public clientController() {
-        try {
-            client = new ProtoClient("localhost", ProtoClient.DEFAULT_PORT);
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Failed to initialize client: " + e.getMessage());
-        }
+        client = null;
     }
 
-    //initializes the controller and sets up the default view in the clientUI
+    // Initialize method called after FXML loading
     @FXML
     private void initialize() {
-        if (client != null) {
-            client.setGuiController(this);
-            // Update the welcome text with the client's host name
-            welcomeText.setText("Hello " + client.getHost() + "! Please choose an action:");
-        } else {
-            System.out.println("Client is null in initialize method");
-        }
+        connectButton.setDisable(false);
+        viewButton.setDisable(true);
+        updateButton.setDisable(true);
+        welcomeText.setText("Please press the CONNECT button to begin.");
         fieldComboBox.setItems(FXCollections.observableArrayList("Total_price", "Order_address"));
     }
 
-    //Handles the VIEW button logics. lets you interact with it only if updating is false (means that we didn't click it earlier)
+    // Handles the CONNECT button logic
+    @FXML
+    private void handleConnectButton() {
+        try {
+            client = new ProtoClient("localhost", ProtoClient.DEFAULT_PORT);
+            client.setGuiController(this);
+            welcomeText.setText("Hello " + client.getHost() + "! Please choose an action:");
+            connectButton.setDisable(true);
+            viewButton.setDisable(false);
+            updateButton.setDisable(false);
+        } catch (IOException e) {
+            e.printStackTrace();
+            welcomeText.setText("Failed to connect: " + e.getMessage());
+        }
+    }
+
+    // Handles the VIEW button logic
     @FXML
     private void handleViewButton() {
         if (!updating) {
@@ -68,67 +81,67 @@ public class clientController {
         }
     }
 
-    //Handles the pressing of the VIEW button. Updating is TRUE, the button in disabled and the lower part of the UI is visible to make changes
+    // Handles the UPDATE button logic
     @FXML
     private void handleUpdateButton() {
         updating = true;
         updateButton.setDisable(true);
         ordersContainer.setVisible(true);
+        viewButton.setDisable(true); // Disable view button during update
     }
 
-    //Handles the confirmation part in the UPDATE part. checks for incorrect inputs and turns on the UPDATE button in case of a legal information update
+    // Handles the CONFIRM button logic in the UPDATE section
     @FXML
     private void handleConfirmButton() {
         try {
             int orderNum = Integer.parseInt(orderNumberField.getText());
             String field = fieldComboBox.getValue();
             String newValue = newValueField.getText();
-            //Checks for empty values
+
+            // Checks for empty values
             if (field == null || newValue.isEmpty()) {
-            	welcomeText.setText("Please fill in all fields.");
+                welcomeText.setText("Please fill in all fields.");
                 return;
             }
-            //Checks what field was asked to be updated and handle invalid fields
+
+            // Determines the type of newValue based on selected field
             Object newVal;
             if ("Total_price".equals(field)) {
                 newVal = Double.parseDouble(newValue);
             } else if ("Order_address".equals(field)) {
                 newVal = newValue;
             } else {
-            	welcomeText.setText("Invalid field selection.");
+                welcomeText.setText("Invalid field selection.");
                 return;
             }
-            //Uses the client's methods to complete a legal update process
+
+            // Sends update request to the server
             client.sendUpdateOrderRequest(orderNum, field, newVal);
-            //resets the clientUI to default and its related values
+
+            // Clears fields and resets UI after successful update
             orderNumberField.clear();
             fieldComboBox.setValue(null);
             newValueField.clear();
             ordersContainer.setVisible(false);
             updateButton.setDisable(false);
             updating = false;
-            //In case of a wrong value input
+            viewButton.setDisable(false); // Enable view button after update completes
+
         } catch (NumberFormatException e) {
-        	welcomeText.setText("Invalid input: " + e.getMessage());
-            //In case of an error during update process
+            welcomeText.setText("Invalid input: " + e.getMessage());
         } catch (Exception e) {
             System.out.println("Error during update: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    //Closes the program on the client side
+    // Handles the QUIT button logic
     @FXML
     private void handleQuitButton() {
         client.quit();
     }
 
-    //Handles continuous use of the VIEW button
-    public void setDisplayOrdersCallback(Consumer<List<String>> callback) {
-        this.displayOrdersCallback = callback;
-    }
-
-    //Handles the VIEW process 
+    // Displays retrieved orders in the ListView
     public void displayOrders(Object[] orders) {
         Platform.runLater(() -> {
             ordersListView.getItems().clear();
@@ -144,7 +157,7 @@ public class clientController {
         });
     }
 
-    //Method to update The top lable (welcome text)
+    // Updates the welcome text message
     public void updateWelcomeText(String message) {
         Platform.runLater(() -> {
             welcomeText.setText(message);

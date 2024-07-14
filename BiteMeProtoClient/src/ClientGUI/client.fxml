@@ -16,14 +16,16 @@
     </padding>
     <children>
         <Text fx:id="welcomeText" text="Hello user! Please choose an action:" textAlignment="CENTER" wrappingWidth="566.89453125">
-         <font>
-            <Font name="System Bold Italic" size="20.0" />
-         </font></Text>
+            <font>
+                <Font name="System Bold Italic" size="20.0" />
+            </font>
+        </Text>
         <HBox spacing="10.0">
             <children>
-                <Button onAction="#handleViewButton" text="VIEW" />
+                <Button fx:id="connectButton" onAction="#handleConnectButton" text="CONNECT" />
+                <Button fx:id="viewButton" onAction="#handleViewButton" text="VIEW" />
                 <Button fx:id="updateButton" onAction="#handleUpdateButton" text="UPDATE" />
-                <Button onAction="#handleQuitButton" text="QUIT" />
+                <Button fx:id="quitButton" onAction="#handleQuitButton" text="QUIT" />
             </children>
         </HBox>
         <ListView fx:id="ordersListView" />
