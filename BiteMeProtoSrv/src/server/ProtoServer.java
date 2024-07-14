@@ -124,15 +124,4 @@ public class ProtoServer extends AbstractServer {
         this.controller = controller;
      }
 
-    public static void main(String[] args) {
-        int port = 8080;
-
-        ProtoServer sv = new ProtoServer(port);
-        try {
-            sv.listen();
-        } catch (Exception ex) {
-            System.out.println("ERROR - Could not listen for clients!");
-        }   
-    }
-     
 }

@@ -75,26 +75,4 @@ public class ProtoClient extends AbstractClient {
     public void viewOrdersFromDB() {
         sendMessageToServer("view");
     }
-    
-    //For testing functionality outside clientGUI
-    public static void main(String[] args) throws IOException {
-        ProtoClient client = new ProtoClient("localhost", DEFAULT_PORT);
-        try {
-            client.openConnection();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        Order order = new Order(777, "Domino's", 25.99, 1, "456 Elm St");
-        client.sendInsertOrderRequest(order);
-        client.viewOrdersFromDB();
-        client.sendUpdateOrderRequest(777, "total_price", 13.44);
-        client.viewOrdersFromDB();
-        client.sendUpdateOrderRequest(777, "order_address", "hazamir");
-        client.viewOrdersFromDB();
-        Order order2 = new Order(123, "MC", 25.99, 1, "4567 Elm St");
-        client.sendInsertOrderRequest(order2);
-    }
-    
-    
-    
 }
