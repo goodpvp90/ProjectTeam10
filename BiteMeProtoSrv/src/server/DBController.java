@@ -37,7 +37,6 @@ public class DBController {
 	}
 
 	public String updateOrder(int orderNumber, String toChange, Object newParam) {
-		
 		String query = "UPDATE orders SET " + toChange + " = ? WHERE OrderNumber = ?";
         String message;
 

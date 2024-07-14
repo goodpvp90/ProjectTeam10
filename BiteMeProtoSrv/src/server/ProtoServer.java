@@ -2,16 +2,16 @@ package server;
 
 import java.io.*;
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.List;
-
+import ServerGUI.serverController;
 import common.Order;
 import ocsf.server.AbstractServer;
 import ocsf.server.ConnectionToClient;
 
 public class ProtoServer extends AbstractServer {
     private DBController dbController;
-
+    private serverController controller;
+    
     public ProtoServer(int port) {
         super(port);
         dbController = new DBController();
@@ -39,12 +39,11 @@ public class ProtoServer extends AbstractServer {
     
     @Override
     protected void handleMessageFromClient(Object msg, ConnectionToClient client) {
-        //System.out.println("Message received: " + msg + " from " + client);
         String result;
         if (msg instanceof String[]) {
-            String[] message = (String[]) msg;
-            // Handle the initial connection message
-            System.out.println("Received start/end message: " + String.join(", ", message));
+            String[] message = (String[]) msg;//WE NEED TO DELETE THIS U IDIOTS
+            //Handle the initial connection message
+            controller.displayClientDetails((String[])msg);
         }
         else if (msg instanceof Object[]) {
             Object[] message = (Object[]) msg;
@@ -60,11 +59,12 @@ public class ProtoServer extends AbstractServer {
                 }
             }
             //if we want to update an order
-            else if ("updateOrder".equals(message[0])) {
+            else if ("updateOrder".equals(message[0].toString())) {
                 int orderNum = (int) message[1];
-                String toChange = (String) message[2];
-                if ("order_address".equals(toChange))
+                String toChange = message[2].toString();
+                if ("Order_address".equals(toChange)){
                 	result = dbController.updateOrder(orderNum, toChange, (String)message[3]);
+                }
                 else
                 	result = dbController.updateOrder(orderNum, toChange, (double)message[3]);
                 try {
@@ -78,7 +78,6 @@ public class ProtoServer extends AbstractServer {
         } else if (msg instanceof String) {
         	//if want to view
             if ("view".equals(msg)) {
-            	
                 List<Object[]> orders = dbController.showOrders();
                 try {
                     client.sendToClient(orders.toArray());
@@ -91,21 +90,24 @@ public class ProtoServer extends AbstractServer {
         } else {
             System.out.println("Received unknown message from client: " + msg);
         }
+        
     }
 
     @Override
     protected void clientDisconnected(ConnectionToClient client) {
         System.out.println("Client disconnected: " + client);
+        controller.displayClientDetails((new String[]{"Client disconnected: "+client}));
+        System.out.println("Client disconnected: " + client);
     }
 
     @Override
     protected void serverStarted() {
-        System.out.println("Server listening for connections on port " + getPort());
+    	controller.updateStatus("Server listening for connections on port "+ getPort());
     }
 
     @Override
     protected void serverStopped() {
-        System.out.println("Server has stopped listening for connections.");
+    	controller.updateStatus("Server has stopped listening for connections.");
         dbController.closeConnection();
     }
 
@@ -117,6 +119,10 @@ public class ProtoServer extends AbstractServer {
             e.printStackTrace();
         }
     }
+    
+    public void setController(serverController controller) {
+        this.controller = controller;
+     }
 
     public static void main(String[] args) {
         int port = 8080;
@@ -126,14 +132,7 @@ public class ProtoServer extends AbstractServer {
             sv.listen();
         } catch (Exception ex) {
             System.out.println("ERROR - Could not listen for clients!");
-        }
-
-        // Example to stop the server after some time (for testing purposes)
-        /*try {
-            Thread.sleep(30000); // Let the server run for 30 seconds
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        sv.stopServer();*/
+        }   
     }
+     
 }
