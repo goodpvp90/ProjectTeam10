@@ -3,11 +3,11 @@ import ocsf.client.*;
 import java.io.*;
 import java.net.InetAddress;
 import common.Order;
-import ClientGUI.clientController;//ADDED
+import ClientGUI.clientController;
 
 public class ProtoClient extends AbstractClient {
     final public static int DEFAULT_PORT = 8080;
-    private clientController clientController;//ADDED
+    private clientController clientController;//For ClientGUI functionality
 
     public ProtoClient(String host, int port) throws IOException {
         super(host, port);
@@ -17,44 +17,26 @@ public class ProtoClient extends AbstractClient {
         sendToServer(new String[] { clientIP, clientHostName, "start" });
     }
     
-    //ADDED
+    //Constructed a controller for this clientGUI
     public void setGuiController(clientController clientController) {
         this.clientController = clientController;
     }
-  //ADDED
     
-   /* @Override
-    protected void handleMessageFromServer(Object msg) {
-        if (msg instanceof Object[]) {
-            Object[] orders = (Object[]) msg;
-            for (Object order : orders) {
-                Object[] orderDetails = (Object[]) order;
-                //////////////////////////need to send to controller
-                System.out.println("Order Number: " + orderDetails[0] + ", Restaurant: " + orderDetails[1] +
-                        ", Total Price: " + orderDetails[2] + ", Order List Number: " + orderDetails[3] +
-                        ", Order Address: " + orderDetails[4]);
-            }
-        } else {
-        	//send (String)msg to GUIcontroller//
-            System.out.println("Message from server: " + msg);
-        }
-    }*/
-    
-    //CHANGED
     @Override
     protected void handleMessageFromServer(Object msg) {
         if (msg instanceof Object[]) {
             Object[] orders = (Object[]) msg;
             if (clientController != null) {
-            	System.out.println("here");//ADDED
-            	clientController.displayOrders(orders);
+                clientController.displayOrders(orders);
             }
         } else {
-            System.out.println("Message from server: " + msg);
+            //Handles non-array messages in clientController, for updating the top label
+            if (clientController != null) {
+                clientController.updateWelcomeText("Message from server: " + msg);
+            }
         }
     }
-    //CHANGED
-
+    
     public void quit() {
         try {
             String clientIP = InetAddress.getLocalHost().getHostAddress();
@@ -71,8 +53,10 @@ public class ProtoClient extends AbstractClient {
         try {
             sendToServer(msg);
         } catch (Exception e) {
-            System.out.println("Failed to send message to server: " + e.getMessage());
-        }//איך אני גורם לזה לעבוד עם לחיצה על כפתור VIEW
+            if (clientController != null) {
+                clientController.updateWelcomeText("Failed to send message to server: " + e.getMessage());
+            }
+        }
     }
 
     public void sendUpdateOrderRequest(int orderNum, String colToChange, Object newVal) {
@@ -92,7 +76,7 @@ public class ProtoClient extends AbstractClient {
         sendMessageToServer("view");
     }
     
-    
+    //For testing functionality outside clientGUI
     public static void main(String[] args) throws IOException {
         ProtoClient client = new ProtoClient("localhost", DEFAULT_PORT);
         try {
@@ -107,8 +91,10 @@ public class ProtoClient extends AbstractClient {
         client.viewOrdersFromDB();
         client.sendUpdateOrderRequest(777, "order_address", "hazamir");
         client.viewOrdersFromDB();
-        client.sendUpdateOrderRequest(666, "order_address", "hazamit");
-       
-        
+        Order order2 = new Order(123, "MC", 25.99, 1, "4567 Elm St");
+        client.sendInsertOrderRequest(order2);
     }
+    
+    
+    
 }
